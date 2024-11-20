@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ngdemo11/models/user_model.dart';
+import 'package:ngdemo11/pages/details_page.dart';
 import 'package:ngdemo11/services/prefs_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -10,80 +11,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String text = 'No name';
+  List<User> userList = [];
 
-  List <User> userList = [
-  User(id: 2, userName: "Sevara"),
-  User(id: 3, userName: "Nozima"),
-  ];
+  callDetailsPage() async {
+    var result = await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (BuildContext context) {
+      return const DetailsPage();
+    }));
 
+    if (result) {
+      _loadUserList();
+    }
+  }
 
+  _loadUserList() async {
+    List<User>? result = await PrefsSevice.loadUserList();
+    if (result != null) {
+      setState(() {
+        userList = result;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    // PrefsSevice.storeName("Alimovskiy");
-
-
-    // _removeName();
-
-    // _loadName();
-
-
-
-    // User user =User(id: 1, userName: "Alimovskiy");
-    // PrefsSevice.storeUser(user);
-
-    // _loadUser();
-
-    // PrefsSevice.storeUserList(userList);
-    // _loadUserList();
-    _removeUserList();
-
-  }
-
-  _loadUserList() async{
-    List<User>? result = await PrefsSevice.loadUserList();
-    if(result!= null){
-      setState(() {
-        text = result.first.toMap().toString();
-      });
-    }
-  }
-
-
-
-  _removeUserList() async {
-    await PrefsSevice.removeUserList();
-  }
-
-
-
-  _loadUser() async{
-    User? user = await PrefsSevice.loadUser();
-    if(user != null){
-      setState(() {
-        text= user.toMap().toString();
-      });
-
-    }
-  }
-
-
-
-
-  _loadName() async{
-    String result = await PrefsSevice.loadName();
-    setState(() {
-      text = result;
-    });
-
-  }
-
-
-
-  _removeName() async{
-    await PrefsSevice.removeName();
+    _loadUserList();
   }
 
   @override
@@ -91,15 +44,45 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: Text("Shared Preferences",style: TextStyle(color: Colors.white),),
-      ),
-      body: Center(
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 30,
-          ),
+        title: const Text(
+          "Shared Preferences",
+          style: TextStyle(color: Colors.white),
         ),
+      ),
+      body: ListView.builder(
+        itemCount: userList.length,
+        itemBuilder: (BuildContext context, int index) {
+          return _itemOfUser(userList[index]);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          callDetailsPage();
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _itemOfUser(User user) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            user.userName.toString(),
+            style: const TextStyle(fontSize: 20),
+          ),
+          Text(
+            user.id.toString(),
+            style: const TextStyle(fontSize: 20),
+          ),
+        ],
       ),
     );
   }
